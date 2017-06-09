@@ -18,8 +18,22 @@ class ShowLiveData( private val show_id: Int ): LiveData<Show>()
                     val json = result.value.obj()
 
                     this.value = Gson().fromJson<Show>( json.getJSONObject( "response" ).getJSONObject( "show" ).toString() )
+
+//                    "https://api.spreaker.com/v2/shows/$show_id/episodes".httpGet().responseJson { _, _, result ->
+//                        when ( result )
+//                        {
+//                            is Result.Success -> {
+//                                val json = result.value.obj()
+//
+//                                val episodes = Gson().fromJson<List<Episode>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+//
+//                                ( this.value as Show ).episodes = episodes
+//                            }
+//                        }
+//                    }
                 }
             }
         }
     }
+
 }
