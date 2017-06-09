@@ -3,14 +3,11 @@ package samtaylor.podcasts.shows
 import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import samtaylor.podcasts.R
 
 class ShowActivity : LifecycleActivity()
 {
-
-
     override fun onCreate( savedInstanceState: Bundle? )
     {
         super.onCreate( savedInstanceState )
