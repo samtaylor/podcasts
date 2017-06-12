@@ -2,9 +2,11 @@ package samtaylor.podcasts.shows
 
 import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.widget.TextView
 import samtaylor.podcasts.R
+import samtaylor.podcasts.episodeList.EpisodeListFragment
 
 class ShowActivity : LifecycleActivity()
 {
@@ -13,16 +15,26 @@ class ShowActivity : LifecycleActivity()
         super.onCreate( savedInstanceState )
         setContentView( R.layout.activity_show )
 
-        val show_id = this.intent.extras[ EXTRA_SHOW_ID ] as Int
-        ShowLiveData( show_id ).observe( this, Observer { show ->
+        val showId = this.intent.extras[ EXTRA_SHOW_ID ] as Int
+        val showViewModel = ViewModelProviders.of( this ).get( ShowViewModel::class.java )
+
+        showViewModel.getShow( showId ).observe( this, Observer { show ->
 
             val title = findViewById( R.id.show_title ) as TextView
             val author = findViewById( R.id.show_author ) as TextView
             val description = findViewById( R.id.show_description ) as TextView
 
-            title.text = show?.title
-            author.text = show?.author?.fullname
-            description.text = show?.description
+            show?.let {
+                title.text = show.title
+                author.text = show.author.fullname
+                description.text = show.description
+
+                val fragmentTransaction = this.supportFragmentManager.beginTransaction()
+                val episodeFragment = EpisodeListFragment.newInstance( show.show_id )
+
+                fragmentTransaction.add( R.id.episode_list_container, episodeFragment )
+                fragmentTransaction.commit()
+            }
         } )
     }
 

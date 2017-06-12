@@ -1,4 +1,4 @@
-package samtaylor.podcasts.channels
+package samtaylor.podcasts.channel
 
 import android.arch.lifecycle.LifecycleFragment
 import android.arch.lifecycle.Observer
@@ -12,8 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import samtaylor.podcasts.R
-import samtaylor.podcasts.channelsList.ChannelsListViewModel
-import samtaylor.podcasts.shows.Show
+import samtaylor.podcasts.channelList.ChannelListViewModel
+import samtaylor.podcasts.dataModel.Show
 import samtaylor.podcasts.shows.ShowActivity
 
 class ChannelFragment : LifecycleFragment()
@@ -26,7 +26,7 @@ class ChannelFragment : LifecycleFragment()
 
         val index = arguments.getInt( ARG_SECTION_INDEX )
 
-        val channelListViewModel = ViewModelProviders.of( this.activity ).get( ChannelsListViewModel::class.java )
+        val channelListViewModel = ViewModelProviders.of( this.activity ).get( ChannelListViewModel::class.java )
         val channelViewModel = ViewModelProviders.of( this ).get( ChannelViewModel::class.java )
 
         val channel = channelListViewModel.getChannelsList().value!![ index ]
@@ -70,7 +70,7 @@ class ChannelFragment : LifecycleFragment()
             return ShowViewHolder( textView )
         }
 
-        override fun onBindViewHolder(viewHolder: ShowViewHolder?, position: Int )
+        override fun onBindViewHolder( viewHolder: ShowViewHolder?, position: Int )
         {
             val textView = viewHolder?.view as TextView
             val show = shows?.get( position )

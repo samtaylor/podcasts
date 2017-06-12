@@ -6,6 +6,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
+import samtaylor.podcasts.dataModel.Show
 
 class ShowLiveData( private val show_id: Int ): LiveData<Show>()
 {

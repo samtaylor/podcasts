@@ -1,4 +1,4 @@
-package samtaylor.podcasts.channels
+package samtaylor.podcasts.channel
 
 import android.arch.lifecycle.LiveData
 import com.github.kittinunf.fuel.android.extension.responseJson
@@ -6,7 +6,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
-import samtaylor.podcasts.shows.Show
+import samtaylor.podcasts.dataModel.Show
 
 class ChannelLiveData( private val list_id: Int ): LiveData<List<Show>>()
 {

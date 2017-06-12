@@ -1,4 +1,4 @@
-package samtaylor.podcasts.shows
+package samtaylor.podcasts.dataModel
 
 class Show( val show_id: Int,
             val title: String,
@@ -6,4 +6,4 @@ class Show( val show_id: Int,
             image_url: String,
             image_original_url: String,
             val description: String,
-            val author: Author )
+            val author: Author)

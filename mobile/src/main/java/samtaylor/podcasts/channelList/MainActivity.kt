@@ -1,4 +1,4 @@
-package samtaylor.podcasts.channelsList
+package samtaylor.podcasts.channelList
 
 import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
@@ -11,19 +11,19 @@ import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.widget.Toolbar
 import samtaylor.podcasts.R
-import samtaylor.podcasts.channels.ChannelFragment
+import samtaylor.podcasts.channel.ChannelFragment
 
-class ChannelsListActivity : LifecycleActivity()
+class MainActivity : LifecycleActivity()
 {
     override fun onCreate( savedInstanceState: Bundle? )
     {
         super.onCreate( savedInstanceState )
-        setContentView( R.layout.activity_channels_list)
+        setContentView( R.layout.activity_main )
 
         val toolbar = findViewById( R.id.toolbar ) as Toolbar
         setActionBar( toolbar )
 
-        val listsData = ViewModelProviders.of( this ).get( ChannelsListViewModel::class.java )
+        val listsData = ViewModelProviders.of( this ).get( ChannelListViewModel::class.java )
         listsData.getChannelsList().observe( this, Observer { channelsList ->
             val channelsAdapter = ChannelsAdapter( supportFragmentManager, channelsList!! )
 
@@ -44,7 +44,7 @@ class ChannelsListActivity : LifecycleActivity()
         } )
     }
 
-    inner class ChannelsAdapter(fm: FragmentManager, val channels: List<ChannelsListLiveData.Channel> ) : FragmentPagerAdapter( fm )
+    inner class ChannelsAdapter(fm: FragmentManager, val channels: List<ChannelListLiveData.Channel> ) : FragmentPagerAdapter( fm )
     {
         override fun getItem( index: Int ): Fragment
         {

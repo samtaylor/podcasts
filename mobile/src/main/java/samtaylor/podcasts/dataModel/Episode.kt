@@ -1,7 +1,7 @@
-package samtaylor.podcasts.episodes
+package samtaylor.podcasts.dataModel
 
 class Episode( episode_id: Int,
-               title: String,
+               val title: String,
                duration: Int,
                explicit: Boolean,
                site_url: String,

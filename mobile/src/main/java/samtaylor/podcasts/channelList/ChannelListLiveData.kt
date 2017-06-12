@@ -1,4 +1,4 @@
-package samtaylor.podcasts.channelsList
+package samtaylor.podcasts.channelList
 
 import android.arch.lifecycle.LiveData
 import com.github.kittinunf.fuel.android.extension.responseJson
@@ -6,7 +6,7 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import com.github.salomonbrys.kotson.fromJson
 
-class ChannelsListLiveData : LiveData<List<ChannelsListLiveData.Channel>>()
+class ChannelListLiveData : LiveData<List<ChannelListLiveData.Channel>>()
 {
     override fun onActive()
     {
