@@ -7,14 +7,14 @@ import samtaylor.podcasts.fetcher.CachedJsonFetcher
 
 class ChannelListLiveData : LiveData<List<Channel>>()
 {
-    private val fetcher = CachedJsonFetcher { json ->
-        Gson().fromJson<List<Channel>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+    private val fetcher = CachedJsonFetcher {
+        Gson().fromJson<List<Channel>>( it.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
     }
 
     override fun onActive()
     {
-        this.fetcher.fetch( "https://api.spreaker.com/v2/explore/lists?country=GB&limit=3" ) { channels ->
-            this.value = channels
+        this.fetcher.fetch( "https://api.spreaker.com/v2/explore/lists?country=GB&limit=3" ) {
+            this.value = it
         }
     }
 
