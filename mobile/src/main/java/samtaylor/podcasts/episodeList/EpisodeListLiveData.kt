@@ -1,26 +1,21 @@
 package samtaylor.podcasts.episodeList
 
 import android.arch.lifecycle.LiveData
-import com.github.kittinunf.fuel.android.extension.responseJson
-import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.result.Result
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import samtaylor.podcasts.dataModel.Episode
+import samtaylor.podcasts.fetcher.CachedJsonFetcher
 
-class EpisodeListLiveData(private val show_id: Int ): LiveData<List<Episode>>()
+class EpisodeListLiveData( private val show_id: Int ): LiveData<List<Episode>>()
 {
+    private val fetcher = CachedJsonFetcher { json ->
+        Gson().fromJson<List<Episode>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+    }
+
     override fun onActive()
     {
-        "https://api.spreaker.com/v2/shows/$show_id/episodes".httpGet().responseJson { _, _, result ->
-            when ( result )
-            {
-                is Result.Success -> {
-                    val json = result.value.obj()
-
-                    this.value = Gson().fromJson<List<Episode>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
-                }
-            }
+        this.fetcher.fetch( "https://api.spreaker.com/v2/shows/$show_id/episodes" ) { episodes ->
+            this.value = episodes
         }
     }
 }
