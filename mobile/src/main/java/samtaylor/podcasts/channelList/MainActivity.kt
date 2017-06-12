@@ -43,7 +43,7 @@ class MainActivity : LifecycleActivity()
         tabLayout.addOnTabSelectedListener( TabLayout.ViewPagerOnTabSelectedListener( channelsViewPager ) )
     }
 
-    inner class ChannelsAdapter(fm: FragmentManager, val channels: List<Channel> ) : FragmentPagerAdapter( fm )
+    inner class ChannelsAdapter( fm: FragmentManager, val channels: List<Channel> ) : FragmentPagerAdapter( fm )
     {
         override fun getItem( index: Int ): Fragment
         {

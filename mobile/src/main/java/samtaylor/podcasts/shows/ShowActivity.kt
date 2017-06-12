@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.widget.TextView
+import android.widget.Toolbar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.episodeList.EpisodeListFragment
 
@@ -17,6 +18,9 @@ class ShowActivity : LifecycleActivity()
 
         val showId = this.intent.extras[ EXTRA_SHOW_ID ] as Int
         val showViewModel = ViewModelProviders.of( this ).get( ShowViewModel::class.java )
+
+        val toolbar = findViewById( R.id.toolbar ) as Toolbar
+        setActionBar( toolbar )
 
         showViewModel.getShow( showId ).observe( this, Observer { show ->
 

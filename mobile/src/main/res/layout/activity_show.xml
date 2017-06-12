@@ -7,17 +7,26 @@
     android:layout_height="match_parent"
     tools:context="samtaylor.podcasts.shows.ShowActivity">
 
+    <android.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_weight="1"
+        android:background="?attr/colorPrimary"
+        app:layout_scrollFlags="scroll|enterAlways"
+        android:theme="@style/AppTheme.AppBarOverlay"/>
+
     <TextView
         android:id="@+id/show_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         tools:text="Title"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"/>
 
     <TextView
         android:id="@+id/show_description"

@@ -39,7 +39,10 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".shows.ShowActivity" />
+        <activity
+            android:name=".shows.ShowActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
 
     </application>
 
