@@ -1,4 +1,4 @@
-package samtaylor.podcasts.episodeList
+package samtaylor.podcasts.episode
 
 import android.arch.lifecycle.LiveData
 import com.github.salomonbrys.kotson.fromJson
@@ -6,17 +6,16 @@ import com.google.gson.Gson
 import samtaylor.podcasts.dataModel.Episode
 import samtaylor.podcasts.fetcher.CachedJsonFetcher
 
-class EpisodeListLiveData( private val showId: Int ): LiveData<List<Episode>>()
+class EpisodeLiveData( private val episodeId: Int ) : LiveData<Episode>()
 {
     private val fetcher = CachedJsonFetcher {
-        Gson().fromJson<List<Episode>>( it.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+        Gson().fromJson<Episode>( it.getJSONObject( "response" ).getJSONObject( "episode" ).toString() )
     }
 
     override fun onActive()
     {
-        this.fetcher.fetch( "https://api.spreaker.com/v2/shows/$showId/episodes" ) {
+        this.fetcher.fetch( "https://api.spreaker.com/v2/episodes/$episodeId" ) {
             this.value = it
         }
     }
 }
-

@@ -23,11 +23,11 @@ class EpisodeListFragment: LifecycleFragment()
     {
         val rootView = inflater!!.inflate( R.layout.fragment_episode_list, container, false )
 
-        val showId = arguments.getInt( ARG_SHOW_ID )
+        val showId = arguments[ ARG_SHOW_ID ] as Int
 
-        val episodeListViewModel = ViewModelProviders.of( this.activity ).get( EpisodeListViewModel::class.java )
+        val episodeListViewModel = ViewModelProviders.of( this.activity )[ EpisodeListViewModel::class.java ]
 
-        val episodeListLiveData = episodeListViewModel.getEpisodeListLiveData( showId )
+        val episodeListLiveData = episodeListViewModel[ showId ]
         episodeListLiveData.observe( this, Observer { episodes ->
             val recyclerView = rootView.findViewById( R.id.episode_list ) as RecyclerView
             recyclerView.setHasFixedSize( true )

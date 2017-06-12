@@ -17,12 +17,12 @@ class ShowActivity : LifecycleActivity()
         setContentView( R.layout.activity_show )
 
         val showId = this.intent.extras[ EXTRA_SHOW_ID ] as Int
-        val showViewModel = ViewModelProviders.of( this ).get( ShowViewModel::class.java )
+        val showViewModel = ViewModelProviders.of( this )[ ShowViewModel::class.java ]
 
         val toolbar = findViewById( R.id.toolbar ) as Toolbar
         setActionBar( toolbar )
 
-        showViewModel.getShow( showId ).observe( this, Observer { show ->
+        showViewModel[ showId ].observe( this, Observer { show ->
 
             val title = findViewById( R.id.show_title ) as TextView
             val author = findViewById( R.id.show_author ) as TextView

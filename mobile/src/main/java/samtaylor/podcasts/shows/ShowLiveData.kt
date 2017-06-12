@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import samtaylor.podcasts.dataModel.Show
 import samtaylor.podcasts.fetcher.CachedJsonFetcher
 
-class ShowLiveData( private val show_id: Int ): LiveData<Show>()
+class ShowLiveData( private val showId: Int ): LiveData<Show>()
 {
     private val fetcher = CachedJsonFetcher {
         Gson().fromJson<Show>( it.getJSONObject( "response" ).getJSONObject( "show" ).toString() )
@@ -14,7 +14,7 @@ class ShowLiveData( private val show_id: Int ): LiveData<Show>()
 
     override fun onActive()
     {
-        this.fetcher.fetch( "https://api.spreaker.com/v2/shows/$show_id" ) {
+        this.fetcher.fetch( "https://api.spreaker.com/v2/shows/$showId" ) {
             this.value = it
         }
     }

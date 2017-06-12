@@ -6,7 +6,7 @@ class ShowViewModel : ViewModel()
 {
     val showLiveDataTable: HashMap<Int, ShowLiveData> = HashMap()
 
-    fun getShow( showId: Int ) : ShowLiveData
+    operator fun get( showId: Int ) : ShowLiveData
     {
         if ( showLiveDataTable[ showId ] == null )
         {

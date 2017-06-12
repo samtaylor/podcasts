@@ -25,7 +25,7 @@ class MainActivity : LifecycleActivity()
 
         val tabLayout = findViewById( R.id.tabs ) as TabLayout
         val channelsViewPager = findViewById( R.id.channels ) as ViewPager
-        val listsData = ViewModelProviders.of( this ).get( ChannelListViewModel::class.java )
+        val listsData = ViewModelProviders.of( this )[ ChannelListViewModel::class.java ]
 
         listsData.getChannelList().observe( this, Observer { channelList ->
 

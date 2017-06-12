@@ -6,12 +6,12 @@ class ChannelViewModel: ViewModel()
 {
     private val channelLiveDataTable: HashMap<Int, ChannelLiveData> = HashMap()
 
-    fun getChannel( item_id: Int ): ChannelLiveData
+    operator fun get( itemId: Int ): ChannelLiveData
     {
-        if ( this.channelLiveDataTable[ item_id ] == null )
+        if ( this.channelLiveDataTable[ itemId ] == null )
         {
-            this.channelLiveDataTable[ item_id ] = ChannelLiveData( item_id )
+            this.channelLiveDataTable[ itemId ] = ChannelLiveData( itemId )
         }
-        return this.channelLiveDataTable[ item_id ]!!
+        return this.channelLiveDataTable[ itemId ]!!
     }
 }

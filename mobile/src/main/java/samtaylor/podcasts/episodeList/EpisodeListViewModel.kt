@@ -6,12 +6,12 @@ class EpisodeListViewModel : ViewModel()
 {
     private val episodeListLiveDataTable: HashMap<Int, EpisodeListLiveData> = HashMap()
 
-    fun getEpisodeListLiveData( show_id: Int ): EpisodeListLiveData
+    operator fun get( showId: Int ): EpisodeListLiveData
     {
-        if ( this.episodeListLiveDataTable[ show_id ] == null )
+        if ( this.episodeListLiveDataTable[ showId ] == null )
         {
-            this.episodeListLiveDataTable[ show_id ]= EpisodeListLiveData( show_id )
+            this.episodeListLiveDataTable[ showId ]= EpisodeListLiveData( showId )
         }
-        return this.episodeListLiveDataTable[ show_id ]!!
+        return this.episodeListLiveDataTable[ showId ]!!
     }
 }

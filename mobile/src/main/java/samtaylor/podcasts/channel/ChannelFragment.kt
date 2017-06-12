@@ -24,13 +24,13 @@ class ChannelFragment : LifecycleFragment()
     {
         val rootView = inflater!!.inflate( R.layout.fragment_channel, container, false )
 
-        val index = arguments.getInt( ARG_SECTION_INDEX )
+        val index = arguments[ ARG_SECTION_INDEX ] as Int
 
-        val channelListViewModel = ViewModelProviders.of( this.activity ).get( ChannelListViewModel::class.java )
-        val channelViewModel = ViewModelProviders.of( this ).get( ChannelViewModel::class.java )
+        val channelListViewModel = ViewModelProviders.of( this.activity )[ ChannelListViewModel::class.java ]
+        val channelViewModel = ViewModelProviders.of( this )[ ChannelViewModel::class.java ]
 
         val channel = channelListViewModel.getChannelList().value!![ index ]
-        val channelLiveData = channelViewModel.getChannel( channel.list_id )
+        val channelLiveData = channelViewModel[ channel.list_id ]
 
         channelLiveData.observe( this, Observer { shows ->
             val recyclerView = rootView.findViewById( R.id.channel_list ) as RecyclerView
