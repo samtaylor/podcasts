@@ -32,7 +32,7 @@
          MediaBrowser (for browsing) and MediaController (for playback control)
         -->
         <service
-            android:name=".PodcastService"
+            android:name=".playback.PlaybackService"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService"/>
@@ -41,9 +41,9 @@
 
         <activity
             android:name=".shows.ShowActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".episode.EpisodeActivity">
+        </activity>
     </application>
 
 </manifest>

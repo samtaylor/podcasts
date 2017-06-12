@@ -3,6 +3,7 @@ package samtaylor.podcasts.episodeList
 import android.arch.lifecycle.LifecycleFragment
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import samtaylor.podcasts.R
 import samtaylor.podcasts.dataModel.Episode
+import samtaylor.podcasts.episode.EpisodeActivity
 
 class EpisodeListFragment: LifecycleFragment()
 {
@@ -76,9 +78,9 @@ class EpisodeListFragment: LifecycleFragment()
             textView.text = episode?.title
             textView.setOnClickListener { _ ->
 
-//                val intent = Intent( textView.context, ShowActivity::class.java )
-//                intent.putExtra( ShowActivity.EXTRA_SHOW_ID, show.show_id )
-//                textView.context.startActivity( intent )
+                val intent = Intent( textView.context, EpisodeActivity::class.java )
+                intent.putExtra( EpisodeActivity.EXTRA_EPISODE_ID, episode?.episode_id )
+                textView.context.startActivity( intent )
             }
         }
     }
