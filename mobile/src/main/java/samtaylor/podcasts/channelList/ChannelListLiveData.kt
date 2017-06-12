@@ -8,6 +8,8 @@ import com.github.salomonbrys.kotson.fromJson
 
 class ChannelListLiveData : LiveData<List<ChannelListLiveData.Channel>>()
 {
+    private var cacheValue: String? = null
+
     override fun onActive()
     {
         "https://api.spreaker.com/v2/explore/lists?country=GB&limit=3".httpGet().responseJson { _, _, result ->
@@ -16,7 +18,12 @@ class ChannelListLiveData : LiveData<List<ChannelListLiveData.Channel>>()
                 is Result.Success ->
                 {
                     val json = result.value.obj()
-                    this.value = com.google.gson.Gson().fromJson<List<Channel>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+
+                    if ( this.cacheValue != json.toString() )
+                    {
+                        this.value = com.google.gson.Gson().fromJson<List<Channel>>( json.getJSONObject( "response" ).getJSONArray( "items" ).toString() )
+                        this.cacheValue = json.toString()
+                    }
                 }
             }
         }

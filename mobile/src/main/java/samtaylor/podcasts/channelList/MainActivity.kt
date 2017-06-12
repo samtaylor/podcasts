@@ -23,25 +23,24 @@ class MainActivity : LifecycleActivity()
         val toolbar = findViewById( R.id.toolbar ) as Toolbar
         setActionBar( toolbar )
 
+        val tabLayout = findViewById( R.id.tabs ) as TabLayout
+        val channelsViewPager = findViewById( R.id.channels ) as ViewPager
         val listsData = ViewModelProviders.of( this ).get( ChannelListViewModel::class.java )
-        listsData.getChannelsList().observe( this, Observer { channelsList ->
-            val channelsAdapter = ChannelsAdapter( supportFragmentManager, channelsList!! )
 
-            val channelsViewPager = findViewById( R.id.channels ) as ViewPager
-            channelsViewPager.adapter = channelsAdapter
+        listsData.getChannelList().observe( this, Observer { channelList ->
 
-            val tabLayout = findViewById( R.id.tabs ) as TabLayout
-            tabLayout.removeAllTabs()
-            for ( podcastList in channelsList )
+            channelsViewPager.adapter = ChannelsAdapter( supportFragmentManager, channelList!! )
+
+            for ( channel in channelList )
             {
                 val tab = tabLayout.newTab()
-                tab.text = podcastList.name
-                tabLayout.addTab( tab )
+                tab.text = channel.name
+                tabLayout.addTab(tab)
             }
-
-            channelsViewPager.addOnPageChangeListener( TabLayout.TabLayoutOnPageChangeListener( tabLayout ) )
-            tabLayout.addOnTabSelectedListener( TabLayout.ViewPagerOnTabSelectedListener(channelsViewPager) )
         } )
+
+        channelsViewPager.addOnPageChangeListener( TabLayout.TabLayoutOnPageChangeListener( tabLayout ) )
+        tabLayout.addOnTabSelectedListener( TabLayout.ViewPagerOnTabSelectedListener( channelsViewPager ) )
     }
 
     inner class ChannelsAdapter(fm: FragmentManager, val channels: List<ChannelListLiveData.Channel> ) : FragmentPagerAdapter( fm )

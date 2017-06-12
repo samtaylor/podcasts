@@ -29,7 +29,7 @@ class ChannelFragment : LifecycleFragment()
         val channelListViewModel = ViewModelProviders.of( this.activity ).get( ChannelListViewModel::class.java )
         val channelViewModel = ViewModelProviders.of( this ).get( ChannelViewModel::class.java )
 
-        val channel = channelListViewModel.getChannelsList().value!![ index ]
+        val channel = channelListViewModel.getChannelList().value!![ index ]
         val channelLiveData = channelViewModel.getChannel( channel.list_id )
 
         channelLiveData.observe( this, Observer { shows ->
