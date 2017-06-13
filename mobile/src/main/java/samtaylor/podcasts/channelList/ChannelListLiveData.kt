@@ -3,6 +3,7 @@ package samtaylor.podcasts.channelList
 import android.arch.lifecycle.LiveData
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
+import samtaylor.podcasts.dataModel.Channel
 import samtaylor.podcasts.fetcher.CachedJsonFetcher
 
 class ChannelListLiveData : LiveData<List<Channel>>()

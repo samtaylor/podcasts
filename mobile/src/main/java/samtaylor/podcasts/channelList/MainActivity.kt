@@ -12,6 +12,7 @@ import android.support.v4.view.ViewPager
 import android.widget.Toolbar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.channel.ChannelFragment
+import samtaylor.podcasts.dataModel.Channel
 
 class MainActivity : LifecycleActivity()
 {

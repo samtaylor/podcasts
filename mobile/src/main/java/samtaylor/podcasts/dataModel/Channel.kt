@@ -1,4 +1,4 @@
-package samtaylor.podcasts.channelList
+package samtaylor.podcasts.dataModel
 
-class Channel( val list_id: Int,
-               val name: String )
+data class Channel( val list_id: Int,
+                    val name: String )
