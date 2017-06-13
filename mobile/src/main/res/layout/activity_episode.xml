@@ -19,17 +19,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="8dp"/>
 
-    <Button
-        android:id="@+id/play_pause_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/play"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/episode_name"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/mini_player_height"
+        android:orientation="vertical"
+        android:id="@+id/playback_fragment_container"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="8dp"
-        android:onClick="playPauseButtonClicked" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
