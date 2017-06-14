@@ -4,14 +4,14 @@ import android.arch.lifecycle.ViewModel
 
 class ChannelViewModel: ViewModel()
 {
-    private val channelLiveDataTable: HashMap<Int, ChannelLiveData> = HashMap()
+    private var channelLiveData: ChannelLiveData? = null
 
-    operator fun get( itemId: Int ): ChannelLiveData
+    fun getChannel( itemId: Int ): ChannelLiveData
     {
-        if ( this.channelLiveDataTable[ itemId ] == null )
+        if ( this.channelLiveData == null )
         {
-            this.channelLiveDataTable[ itemId ] = ChannelLiveData( itemId )
+            this.channelLiveData = ChannelLiveData( itemId )
         }
-        return this.channelLiveDataTable[ itemId ]!!
+        return this.channelLiveData!!
     }
 }

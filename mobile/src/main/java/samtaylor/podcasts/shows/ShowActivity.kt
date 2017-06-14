@@ -22,7 +22,7 @@ class ShowActivity : LifecycleActivity()
         val toolbar = findViewById( R.id.toolbar ) as Toolbar
         setActionBar( toolbar )
 
-        showViewModel[ showId ].observe( this, Observer { show ->
+        showViewModel.getShow( showId ).observe( this, Observer { show ->
 
             val title = findViewById( R.id.show_title ) as TextView
             val author = findViewById( R.id.show_author ) as TextView

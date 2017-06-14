@@ -30,7 +30,7 @@ class ChannelFragment : LifecycleFragment()
         val channelViewModel = ViewModelProviders.of( this )[ ChannelViewModel::class.java ]
 
         val channel = channelListViewModel.getChannelList().value!![ index ]
-        val channelLiveData = channelViewModel[ channel.list_id ]
+        val channelLiveData = channelViewModel.getChannel( channel.list_id )
 
         channelLiveData.observe( this, Observer { shows ->
             val recyclerView = rootView.findViewById( R.id.channel_list ) as RecyclerView

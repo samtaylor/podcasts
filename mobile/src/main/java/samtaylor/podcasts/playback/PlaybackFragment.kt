@@ -68,7 +68,7 @@ class PlaybackFragment: LifecycleFragment()
         }
 
         val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
-        viewModel[ episodeId ].observe( this, Observer {
+        viewModel.getEpisode( episodeId ).observe( this, Observer {
             val showName = rootView.findViewById( R.id.playing_show_name ) as TextView
             val episodeName = rootView.findViewById( R.id.playing_episode_name ) as TextView
 

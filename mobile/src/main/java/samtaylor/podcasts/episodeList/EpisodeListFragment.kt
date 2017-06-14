@@ -27,7 +27,7 @@ class EpisodeListFragment: LifecycleFragment()
 
         val episodeListViewModel = ViewModelProviders.of( this.activity )[ EpisodeListViewModel::class.java ]
 
-        val episodeListLiveData = episodeListViewModel[ showId ]
+        val episodeListLiveData = episodeListViewModel.getEpisodeList( showId )
         episodeListLiveData.observe( this, Observer { episodes ->
             val recyclerView = rootView.findViewById( R.id.episode_list ) as RecyclerView
             recyclerView.setHasFixedSize( true )

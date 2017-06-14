@@ -4,15 +4,15 @@ import android.arch.lifecycle.ViewModel
 
 class ShowViewModel : ViewModel()
 {
-    val showLiveDataTable: HashMap<Int, ShowLiveData> = HashMap()
+    private var showLiveData: ShowLiveData? = null
 
-    operator fun get( showId: Int ) : ShowLiveData
+    fun getShow( showId: Int ) : ShowLiveData
     {
-        if ( showLiveDataTable[ showId ] == null )
+        if ( this.showLiveData == null )
         {
-            showLiveDataTable[ showId ] = ShowLiveData( showId )
+            this.showLiveData = ShowLiveData( showId )
         }
 
-        return showLiveDataTable[ showId ]!!
+        return this.showLiveData!!
     }
 }
