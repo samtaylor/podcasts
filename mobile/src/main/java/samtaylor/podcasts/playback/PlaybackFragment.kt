@@ -3,12 +3,9 @@ package samtaylor.podcasts.playback
 import android.arch.lifecycle.LifecycleFragment
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,26 +16,23 @@ import samtaylor.podcasts.episode.EpisodeViewModel
 
 class PlaybackFragment: LifecycleFragment()
 {
-
-    private var playbackService: PlaybackService? = null
-
-    private var serviceBound = false
-
-    private val serviceConnection = PlaybackServiceConnection()
-
-    inner class PlaybackServiceConnection: ServiceConnection
-    {
-        override fun onServiceConnected( name: ComponentName?, service: IBinder? )
+    private val serviceConnection = PlaybackServiceConnection { serviceConnection, state ->
+        when ( state )
         {
-            val binder = service as PlaybackService.LocalBinder
-            this@PlaybackFragment.playbackService = binder.getService()
+            PlaybackServiceConnection.ConnectionState.CONNECTED -> {
+                val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
+                val currentEpisode = serviceConnection.currentEpisode?.let{ it } ?: episodeId
+                val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
+                viewModel.getEpisode( currentEpisode ).observe( this, Observer {
+                    val showName = this.activity.findViewById( R.id.playing_show_name ) as TextView
+                    val episodeName = this.activity.findViewById( R.id.playing_episode_name ) as TextView
 
-            this@PlaybackFragment.serviceBound = true
-        }
+                    showName.text = it?.show?.title
+                    episodeName.text = it?.title
+                } )
 
-        override fun onServiceDisconnected( name: ComponentName? )
-        {
-            this@PlaybackFragment.serviceBound = false
+            }
+            else -> {}
         }
     }
 
@@ -46,7 +40,15 @@ class PlaybackFragment: LifecycleFragment()
     {
         super.onCreate( savedInstanceState )
 
-        this.retainInstance = true
+        val intent = Intent( this.context, PlaybackService::class.java )
+        this.context.bindService( intent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
+
+        this.context.unbindService( this.serviceConnection )
     }
 
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?
@@ -58,23 +60,11 @@ class PlaybackFragment: LifecycleFragment()
 
         val playButton = rootView.findViewById( R.id.play_button ) as ImageButton
         playButton.setOnClickListener {
-            if ( !this.serviceBound )
-            {
-                val playIntent = Intent( this.context, PlaybackService::class.java )
-                playIntent.putExtra( "media", "https://api.spreaker.com/v2/episodes/$episodeId/play" )
-                this.context.startService( playIntent )
-                this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
-            }
+            val playIntent = Intent( this.context, PlaybackService::class.java )
+            playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
+            this.context.startService( playIntent )
+            this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
         }
-
-        val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
-        viewModel.getEpisode( episodeId ).observe( this, Observer {
-            val showName = rootView.findViewById( R.id.playing_show_name ) as TextView
-            val episodeName = rootView.findViewById( R.id.playing_episode_name ) as TextView
-
-            showName.text = it?.show?.title
-            episodeName.text = it?.title
-        })
 
         return rootView
     }

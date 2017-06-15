@@ -18,9 +18,21 @@ class PlaybackService: Service(),
                        MediaPlayer.OnBufferingUpdateListener,
                        AudioManager.OnAudioFocusChangeListener
 {
+    companion object
+    {
+        val EXTRA_EPISODE_ID = "episode_id"
+    }
+
+    enum class PlaybackState
+    {
+        STOPPED, PAUSED, PLAYING
+    }
+
+    var playbackState = PlaybackState.STOPPED
+
     private var mediaPlayer: MediaPlayer? = null
 
-    private var mediaFile: String? = null
+    var episodeId: Int? = null
 
     private var resumePosition = 0
 
@@ -28,9 +40,9 @@ class PlaybackService: Service(),
 
     override fun onStartCommand( intent: Intent?, flags: Int, startId: Int ): Int
     {
-        this.mediaFile = intent?.extras?.get( "media" ) as String
+        this.episodeId = intent?.extras?.get( EXTRA_EPISODE_ID ) as? Int
 
-        if ( this.mediaFile != null && !this.mediaFile.equals( "" ) )
+        if ( this.episodeId != null )
         {
             if ( !this.requestAudioFocus() )
             {
@@ -75,7 +87,7 @@ class PlaybackService: Service(),
 
             it.setAudioStreamType( AudioManager.STREAM_MUSIC )
 
-            it.setDataSource( this.mediaFile )
+            it.setDataSource( "https://api.spreaker.com/v2/episodes/${this.episodeId}/play" )
 
             it.prepareAsync()
         }
@@ -86,7 +98,15 @@ class PlaybackService: Service(),
         this.mediaPlayer?.let {
             if ( !it.isPlaying )
             {
-                it.start()
+                if ( this.resumePosition != 0 )
+                {
+                    this.resumeMedia()
+                }
+                else
+                {
+                    it.start()
+                    this.playbackState = PlaybackState.PLAYING
+                }
             }
         }
     }
@@ -97,6 +117,8 @@ class PlaybackService: Service(),
             if ( it.isPlaying )
             {
                 it.stop()
+                this.resumePosition = 0
+                this.playbackState = PlaybackState.STOPPED
             }
         }
     }
@@ -108,6 +130,7 @@ class PlaybackService: Service(),
             {
                 it.pause()
                 this.resumePosition = it.currentPosition
+                this.playbackState = PlaybackState.PAUSED
             }
         }
     }
@@ -119,6 +142,7 @@ class PlaybackService: Service(),
             {
                 it.seekTo( this.resumePosition )
                 it.start()
+                this.playbackState = PlaybackState.PLAYING
             }
         }
     }
@@ -147,28 +171,22 @@ class PlaybackService: Service(),
                 }
 
                 this.mediaPlayer?.let {
-                    if ( !it.isPlaying )
-                    {
-                        it.start()
-                    }
+                    this.playMedia()
                     it.setVolume( 1.0F, 1.0F )
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
                 this.mediaPlayer?.let {
-                    if ( it.isPlaying )
-                    {
-                        it.stop()
-                        it.release()
-                        this.mediaPlayer = null
-                    }
+                    this.stopMedia()
+                    it.release()
+                    this.mediaPlayer = null
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 this.mediaPlayer?.let {
-                    if ( it.isPlaying ) it.pause()
+                    this.pauseMedia()
                 }
             }
 
