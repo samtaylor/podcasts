@@ -17,6 +17,9 @@ class PlaybackServiceConnection( private val callback: ( PlaybackServiceConnecti
     var currentEpisode: Int? = null
         get() = this.playbackService?.episodeId
 
+    var playbackState: PlaybackService.PlaybackState = PlaybackService.PlaybackState.STOPPED
+        get() = this.playbackService?.playbackState ?: PlaybackService.PlaybackState.STOPPED
+
     override fun onServiceConnected(name: ComponentName?, service: IBinder? )
     {
         val binder = service as PlaybackService.LocalBinder

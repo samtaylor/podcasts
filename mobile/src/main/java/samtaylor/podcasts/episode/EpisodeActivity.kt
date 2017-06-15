@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.TextView
 import samtaylor.podcasts.R
 import samtaylor.podcasts.playback.PlaybackFragment
+import samtaylor.podcasts.playback.play.PlayButtonFragment
 
 class EpisodeActivity : LifecycleActivity()
 {
@@ -24,16 +25,14 @@ class EpisodeActivity : LifecycleActivity()
             episodeName.text = it?.title
         } )
 
-        var playbackFragment = this.supportFragmentManager.findFragmentByTag( PlaybackFragment.PLAYBACK_FRAGMENT_TAG )
-        if ( playbackFragment == null )
-        {
-            playbackFragment = PlaybackFragment.newInstance( true, episodeId )
+        val playbackFragment = PlaybackFragment.newInstance( episodeId )
 
-            this.supportFragmentManager.beginTransaction().add( R.id.playback_fragment_container,
-                                                                playbackFragment,
-                                                                PlaybackFragment.PLAYBACK_FRAGMENT_TAG ).commit()
-        }
+        this.supportFragmentManager.beginTransaction().add( R.id.playback_fragment_container,
+                                                            playbackFragment,
+                                                            PlaybackFragment.PLAYBACK_FRAGMENT_TAG ).commit()
 
+        val playButtonFragment = PlayButtonFragment.newInstance( episodeId )
+        this.supportFragmentManager.beginTransaction().add( R.id.play_button_container, playButtonFragment ).commit()
     }
 
     companion object

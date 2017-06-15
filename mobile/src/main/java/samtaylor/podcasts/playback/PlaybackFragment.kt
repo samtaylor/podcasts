@@ -9,10 +9,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.TextView
 import samtaylor.podcasts.R
 import samtaylor.podcasts.episode.EpisodeViewModel
+import samtaylor.podcasts.playback.play.PlayButtonFragment
 
 class PlaybackFragment: LifecycleFragment()
 {
@@ -20,6 +20,18 @@ class PlaybackFragment: LifecycleFragment()
         when ( state )
         {
             PlaybackServiceConnection.ConnectionState.CONNECTED -> {
+
+                val playbackFragment = this.activity.findViewById( R.id.playback_fragment )
+                when ( serviceConnection.playbackState )
+                {
+                    PlaybackService.PlaybackState.STOPPED -> {
+                        playbackFragment.visibility = View.GONE
+                    }
+                    else -> {
+                        playbackFragment.visibility = View.VISIBLE
+                    }
+                }
+
                 val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
                 val currentEpisode = serviceConnection.currentEpisode?.let{ it } ?: episodeId
                 val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
@@ -55,16 +67,10 @@ class PlaybackFragment: LifecycleFragment()
     {
         val rootView = inflater!!.inflate( R.layout.fragment_playback, container, false )
 
-        val forceShow = this.arguments[ ARG_FORCE_SHOW ] as Boolean
         val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
 
-        val playButton = rootView.findViewById( R.id.play_button ) as ImageButton
-        playButton.setOnClickListener {
-            val playIntent = Intent( this.context, PlaybackService::class.java )
-            playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
-            this.context.startService( playIntent )
-            this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
-        }
+        val playButtonFragment = PlayButtonFragment.newInstance( episodeId )
+        this.fragmentManager.beginTransaction().add( R.id.fragment_play_button_container, playButtonFragment ).commit()
 
         return rootView
     }
@@ -73,15 +79,13 @@ class PlaybackFragment: LifecycleFragment()
     {
         val PLAYBACK_FRAGMENT_TAG = "playback_fragment"
 
-        val ARG_FORCE_SHOW = "force_show"
         val ARG_EPISODE_ID = "episode_id"
 
-        fun newInstance( forceShow: Boolean, episodeId: Int ): PlaybackFragment
+        fun newInstance( episodeId: Int ): PlaybackFragment
         {
             val fragment = PlaybackFragment()
 
             val args = Bundle()
-            args.putBoolean( ARG_FORCE_SHOW, forceShow )
             args.putInt( ARG_EPISODE_ID, episodeId )
             fragment.arguments = args
 
