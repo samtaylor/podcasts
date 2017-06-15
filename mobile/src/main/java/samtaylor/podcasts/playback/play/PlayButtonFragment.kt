@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.playback.PlaybackService
 import samtaylor.podcasts.playback.PlaybackServiceBroadcastReceiver
@@ -21,7 +22,9 @@ class PlayButtonFragment : Fragment()
         {
             PlaybackServiceConnection.ConnectionState.CONNECTED -> {
 
-                this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING, serviceConnection.currentEpisode )
+                this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING,
+                             serviceConnection.playbackState == PlaybackService.PlaybackState.LOADING,
+                             serviceConnection.currentEpisode )
             }
             else -> {}
         }
@@ -29,16 +32,31 @@ class PlayButtonFragment : Fragment()
 
     private var playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
 
-        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY, episodeId )
+        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY,
+                     action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_LOAD,
+                     episodeId )
     }
 
-    private fun update( isPlaying: Boolean, episodeId: Int? )
+    private fun update( isPlaying: Boolean, isLoading: Boolean, episodeId: Int? )
     {
         val button = this.view?.findViewById( R.id.play_button ) as ImageButton
+        val spinner = this.view?.findViewById( R.id.loading ) as ProgressBar
+
         button.setImageResource( android.R.drawable.ic_media_play )
         if ( episodeId == this.arguments[ ARG_EPISODE_ID ] )
         {
             if ( isPlaying ) { button.setImageResource( android.R.drawable.ic_media_pause ) }
+        }
+
+        if ( isLoading )
+        {
+            button.visibility = View.GONE
+            spinner.visibility = View.VISIBLE
+        }
+        else
+        {
+            button.visibility = View.VISIBLE
+            spinner.visibility = View.GONE
         }
     }
 
@@ -50,9 +68,7 @@ class PlayButtonFragment : Fragment()
                                   this.serviceConnection,
                                   Context.BIND_AUTO_CREATE )
 
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE ) )
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ) )
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_STOP ) )
+        this.playbackServiceBroadcastReceiver.register( this.context )
     }
 
     override fun onDestroy()
@@ -61,7 +77,7 @@ class PlayButtonFragment : Fragment()
 
         this.context.unbindService( this.serviceConnection )
 
-        this.context.unregisterReceiver( this.playbackServiceBroadcastReceiver )
+        this.playbackServiceBroadcastReceiver.unregister( this.context )
     }
 
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?

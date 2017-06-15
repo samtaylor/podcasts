@@ -35,9 +35,7 @@ class PlaybackFragment: LifecycleFragment()
                                   this.serviceConnection,
                                   Context.BIND_AUTO_CREATE )
 
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE ) )
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ) )
-        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_STOP ) )
+        this.playbackServiceBroadcastReceiver.register( this.context )
     }
 
     private fun update( isPlaying: Boolean, episodeId: Int? )
@@ -66,7 +64,7 @@ class PlaybackFragment: LifecycleFragment()
 
         this.context.unbindService( this.serviceConnection )
 
-        this.context.unregisterReceiver( this.playbackServiceBroadcastReceiver )
+        this.playbackServiceBroadcastReceiver.unregister( this.context )
     }
 
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?

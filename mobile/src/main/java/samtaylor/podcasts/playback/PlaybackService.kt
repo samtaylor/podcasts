@@ -25,11 +25,12 @@ class PlaybackService: Service(),
         val BROADCAST_PLAYBACK_SERVICE_PLAY  = "samtaylor.podcasts.playback.play"
         val BROADCAST_PLAYBACK_SERVICE_PAUSE = "samtaylor.podcasts.playback.pause"
         val BROADCAST_PLAYBACK_SERVICE_STOP  = "samtaylor.podcasts.playback.stop"
+        val BROADCAST_PLAYBACK_SERVICE_LOAD  = "samtaylor.podcasts.playback.load"
     }
 
     enum class PlaybackState
     {
-        STOPPED, PAUSED, PLAYING
+        STOPPED, PAUSED, PLAYING, LOADING
     }
 
     var playbackState = PlaybackState.STOPPED
@@ -101,6 +102,12 @@ class PlaybackService: Service(),
             it.setDataSource( "https://api.spreaker.com/v2/episodes/${this.episodeId}/play" )
 
             it.prepareAsync()
+
+            this.playbackState = PlaybackState.LOADING
+
+            val intent = Intent( BROADCAST_PLAYBACK_SERVICE_LOAD )
+            intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+            this.sendBroadcast( intent )
         }
     }
 
