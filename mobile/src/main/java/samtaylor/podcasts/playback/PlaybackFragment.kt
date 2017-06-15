@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,47 +18,46 @@ import samtaylor.podcasts.playback.play.PlayButtonFragment
 class PlaybackFragment: LifecycleFragment()
 {
     private val serviceConnection = PlaybackServiceConnection { serviceConnection, state ->
-        when ( state )
-        {
-            PlaybackServiceConnection.ConnectionState.CONNECTED -> {
 
-                val playbackFragment = this.activity.findViewById( R.id.playback_fragment )
-                when ( serviceConnection.playbackState )
-                {
-                    PlaybackService.PlaybackState.STOPPED -> {
-                        playbackFragment.visibility = View.GONE
-                    }
-                    else -> {
-                        playbackFragment.visibility = View.VISIBLE
-                    }
-                }
+        this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING, serviceConnection.currentEpisode )
+    }
 
-                val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
-                val currentEpisode = serviceConnection.currentEpisode?.let{ it } ?: episodeId
+    private var playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
 
-                val playButtonFragment = PlayButtonFragment.newInstance( currentEpisode )
-                this.fragmentManager.beginTransaction().add( R.id.fragment_play_button_container, playButtonFragment ).commit()
-
-                val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
-                viewModel.getEpisode( currentEpisode ).observe( this, Observer {
-                    val showName = this.activity.findViewById( R.id.playing_show_name ) as TextView
-                    val episodeName = this.activity.findViewById( R.id.playing_episode_name ) as TextView
-
-                    showName.text = it?.show?.title
-                    episodeName.text = it?.title
-                } )
-
-            }
-            else -> {}
-        }
+        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY, episodeId )
     }
 
     override fun onCreate( savedInstanceState: Bundle? )
     {
         super.onCreate( savedInstanceState )
 
-        val intent = Intent( this.context, PlaybackService::class.java )
-        this.context.bindService( intent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+        this.context.bindService( Intent( this.context, PlaybackService::class.java ),
+                                  this.serviceConnection,
+                                  Context.BIND_AUTO_CREATE )
+
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE ) )
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ) )
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_STOP ) )
+    }
+
+    private fun update( isPlaying: Boolean, episodeId: Int? )
+    {
+        episodeId?.let {
+            this.view?.visibility = if ( isPlaying ) View.VISIBLE else View.GONE
+
+            val playButtonFragment = PlayButtonFragment.newInstance( it )
+            this.fragmentManager.beginTransaction().replace( R.id.fragment_play_button_container, playButtonFragment ).commit()
+
+            val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
+            viewModel.getEpisode( it ).observe( this, Observer {
+
+                val showName = this.activity.findViewById( R.id.playing_show_name ) as TextView
+                val episodeName = this.activity.findViewById( R.id.playing_episode_name ) as TextView
+
+                showName.text = it?.show?.title
+                episodeName.text = it?.title
+            } )
+        }
     }
 
     override fun onDestroy()
@@ -65,6 +65,8 @@ class PlaybackFragment: LifecycleFragment()
         super.onDestroy()
 
         this.context.unbindService( this.serviceConnection )
+
+        this.context.unregisterReceiver( this.playbackServiceBroadcastReceiver )
     }
 
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?

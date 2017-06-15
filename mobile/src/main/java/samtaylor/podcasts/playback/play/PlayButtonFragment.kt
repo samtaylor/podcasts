@@ -2,6 +2,7 @@ package samtaylor.podcasts.playback.play
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import samtaylor.podcasts.R
 import samtaylor.podcasts.playback.PlaybackService
+import samtaylor.podcasts.playback.PlaybackServiceBroadcastReceiver
 import samtaylor.podcasts.playback.PlaybackServiceConnection
 
 class PlayButtonFragment : Fragment()
@@ -18,20 +20,25 @@ class PlayButtonFragment : Fragment()
         when ( state )
         {
             PlaybackServiceConnection.ConnectionState.CONNECTED -> {
-                if ( serviceConnection.currentEpisode == this@PlayButtonFragment.arguments[ ARG_EPISODE_ID ] as Int )
-                {
-                    val button = this.view?.findViewById( R.id.play_button ) as ImageButton
-                    if ( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING )
-                    {
-                        button.setImageResource( android.R.drawable.ic_media_pause )
-                    }
-                    else
-                    {
-                        button.setImageResource( android.R.drawable.ic_media_play )
-                    }
-                }
+
+                this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING, serviceConnection.currentEpisode )
             }
             else -> {}
+        }
+    }
+
+    private var playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
+
+        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY, episodeId )
+    }
+
+    private fun update( isPlaying: Boolean, episodeId: Int? )
+    {
+        val button = this.view?.findViewById( R.id.play_button ) as ImageButton
+        button.setImageResource( android.R.drawable.ic_media_play )
+        if ( episodeId == this.arguments[ ARG_EPISODE_ID ] )
+        {
+            if ( isPlaying ) { button.setImageResource( android.R.drawable.ic_media_pause ) }
         }
     }
 
@@ -39,8 +46,22 @@ class PlayButtonFragment : Fragment()
     {
         super.onCreate( savedInstanceState )
 
-        val intent = Intent( this.context, PlaybackService::class.java )
-        this.context.bindService( intent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+        this.context.bindService( Intent( this.context, PlaybackService::class.java ),
+                                  this.serviceConnection,
+                                  Context.BIND_AUTO_CREATE )
+
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE ) )
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ) )
+        this.context.registerReceiver( this.playbackServiceBroadcastReceiver, IntentFilter( PlaybackService.BROADCAST_PLAYBACK_SERVICE_STOP ) )
+    }
+
+    override fun onDestroy()
+    {
+        super.onDestroy()
+
+        this.context.unbindService( this.serviceConnection )
+
+        this.context.unregisterReceiver( this.playbackServiceBroadcastReceiver )
     }
 
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?

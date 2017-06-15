@@ -21,6 +21,10 @@ class PlaybackService: Service(),
     companion object
     {
         val EXTRA_EPISODE_ID = "episode_id"
+
+        val BROADCAST_PLAYBACK_SERVICE_PLAY  = "samtaylor.podcasts.playback.play"
+        val BROADCAST_PLAYBACK_SERVICE_PAUSE = "samtaylor.podcasts.playback.pause"
+        val BROADCAST_PLAYBACK_SERVICE_STOP  = "samtaylor.podcasts.playback.stop"
     }
 
     enum class PlaybackState
@@ -114,6 +118,10 @@ class PlaybackService: Service(),
                     it.start()
                     this.playbackState = PlaybackState.PLAYING
                 }
+
+                val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
+                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                this.sendBroadcast( intent )
             }
         }
     }
@@ -126,6 +134,10 @@ class PlaybackService: Service(),
                 it.stop()
                 this.resumePosition = 0
                 this.playbackState = PlaybackState.STOPPED
+
+                val intent = Intent( BROADCAST_PLAYBACK_SERVICE_STOP )
+                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                this.sendBroadcast( intent )
             }
         }
     }
@@ -138,6 +150,10 @@ class PlaybackService: Service(),
                 it.pause()
                 this.resumePosition = it.currentPosition
                 this.playbackState = PlaybackState.PAUSED
+
+                val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PAUSE )
+                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                this.sendBroadcast( intent )
             }
         }
     }
@@ -150,6 +166,10 @@ class PlaybackService: Service(),
                 it.seekTo( this.resumePosition )
                 it.start()
                 this.playbackState = PlaybackState.PLAYING
+
+                val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
+                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                this.sendBroadcast( intent )
             }
         }
     }

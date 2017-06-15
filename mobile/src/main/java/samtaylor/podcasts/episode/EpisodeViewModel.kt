@@ -4,15 +4,15 @@ import android.arch.lifecycle.ViewModel
 
 class EpisodeViewModel: ViewModel()
 {
-    private var episodeLiveData: EpisodeLiveData? = null
+    private val episodeLiveDataTable: HashMap<Int, EpisodeLiveData> = HashMap()
 
     fun getEpisode( episodeId: Int ): EpisodeLiveData
     {
-        if ( this.episodeLiveData == null )
+        if ( this.episodeLiveDataTable[ episodeId ] == null )
         {
-            this.episodeLiveData = EpisodeLiveData( episodeId )
+            this.episodeLiveDataTable[ episodeId ] = EpisodeLiveData( episodeId )
         }
 
-        return this.episodeLiveData!!
+        return this.episodeLiveDataTable[ episodeId ]!!
     }
 }
