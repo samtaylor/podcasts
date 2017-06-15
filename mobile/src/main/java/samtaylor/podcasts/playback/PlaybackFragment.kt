@@ -34,6 +34,10 @@ class PlaybackFragment: LifecycleFragment()
 
                 val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
                 val currentEpisode = serviceConnection.currentEpisode?.let{ it } ?: episodeId
+
+                val playButtonFragment = PlayButtonFragment.newInstance( currentEpisode )
+                this.fragmentManager.beginTransaction().add( R.id.fragment_play_button_container, playButtonFragment ).commit()
+
                 val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
                 viewModel.getEpisode( currentEpisode ).observe( this, Observer {
                     val showName = this.activity.findViewById( R.id.playing_show_name ) as TextView
@@ -66,11 +70,6 @@ class PlaybackFragment: LifecycleFragment()
     override fun onCreateView( inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle? ): View?
     {
         val rootView = inflater!!.inflate( R.layout.fragment_playback, container, false )
-
-        val episodeId = this.arguments[ ARG_EPISODE_ID ] as Int
-
-        val playButtonFragment = PlayButtonFragment.newInstance( episodeId )
-        this.fragmentManager.beginTransaction().add( R.id.fragment_play_button_container, playButtonFragment ).commit()
 
         return rootView
     }

@@ -48,8 +48,15 @@ class PlaybackService: Service(),
             {
                 this.stopSelf()
             }
+            else
+            {
+                if ( this.playbackState == PlaybackState.PLAYING )
+                {
+                    this.stopMedia()
+                }
 
-            this.initMediaPlayer()
+                this.initMediaPlayer()
+            }
         }
         else
         {

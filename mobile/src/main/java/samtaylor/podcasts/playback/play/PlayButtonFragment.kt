@@ -14,7 +14,26 @@ import samtaylor.podcasts.playback.PlaybackServiceConnection
 
 class PlayButtonFragment : Fragment()
 {
-    private val serviceConnection = PlaybackServiceConnection { _, _ -> }
+    private val serviceConnection = PlaybackServiceConnection { serviceConnection, state ->
+        when ( state )
+        {
+            PlaybackServiceConnection.ConnectionState.CONNECTED -> {
+                if ( serviceConnection.currentEpisode == this@PlayButtonFragment.arguments[ ARG_EPISODE_ID ] as Int )
+                {
+                    val button = this.view?.findViewById( R.id.play_button ) as ImageButton
+                    if ( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING )
+                    {
+                        button.setImageResource( android.R.drawable.ic_media_pause )
+                    }
+                    else
+                    {
+                        button.setImageResource( android.R.drawable.ic_media_play )
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
 
     override fun onCreate( savedInstanceState: Bundle? )
     {
