@@ -41,10 +41,10 @@ class PlayButtonFragment : Fragment()
         val button = this.view?.findViewById( R.id.play_button ) as ImageButton
         val spinner = this.view?.findViewById( R.id.loading ) as ProgressBar
 
-        button.setImageResource( android.R.drawable.ic_media_play )
+        button.setImageResource( R.drawable.ic_play_arrow_black_48px )
         if ( episodeId == this.arguments[ ARG_EPISODE_ID ] )
         {
-            if ( isPlaying ) { button.setImageResource( android.R.drawable.ic_media_pause ) }
+            if ( isPlaying ) { button.setImageResource( R.drawable.ic_pause_black_48px ) }
         }
 
         if ( isLoading )
@@ -102,31 +102,46 @@ class PlayButtonFragment : Fragment()
                         this.context.sendBroadcast( Intent( PlaybackService.ACTION_RESUME ) )
                     }
 
-                    else -> {}
+                    else -> {
+
+                        this.playEpisode( episodeId, this.arguments[ ARG_EPISODE_TITLE ] as String, this.arguments[ ARG_SHOW_TITLE ] as String )
+                    }
                 }
             }
             else
             {
-                val playIntent = Intent( this.context, PlaybackService::class.java )
-                playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
-                this.context.startService( playIntent )
-                this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+                this.playEpisode( episodeId, this.arguments[ ARG_EPISODE_TITLE ] as String, this.arguments[ ARG_SHOW_TITLE ] as String )
             }
         }
 
         return rootView
     }
 
+    private fun playEpisode( episodeId: Int, episodeTitle: String = "episodeTitle", showTitle: String = "showTitle" )
+    {
+
+        val playIntent = Intent( this.context, PlaybackService::class.java )
+        playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
+        playIntent.putExtra( PlaybackService.EXTRA_EPISODE_TITLE, episodeTitle )
+        playIntent.putExtra( PlaybackService.EXTRA_SHOW_TITLE, showTitle )
+        this.context.startService( playIntent )
+        this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+    }
+
     companion object
     {
         val ARG_EPISODE_ID = "episode_id"
+        val ARG_EPISODE_TITLE = "episode_title"
+        val ARG_SHOW_TITLE = "show_title"
 
-        fun newInstance( episodeId: Int ): PlayButtonFragment
+        fun newInstance( episodeId: Int, episodeTitle: String?, showTitle: String? ): PlayButtonFragment
         {
             val fragment = PlayButtonFragment()
 
             val args = Bundle()
             args.putInt( ARG_EPISODE_ID, episodeId )
+            args.putString( ARG_EPISODE_TITLE, episodeTitle )
+            args.putString( ARG_SHOW_TITLE, showTitle )
             fragment.arguments = args
 
             return fragment

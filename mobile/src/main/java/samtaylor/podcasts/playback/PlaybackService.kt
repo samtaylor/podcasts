@@ -1,10 +1,14 @@
 package samtaylor.podcasts.playback
 
+import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.Icon
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Binder
@@ -12,6 +16,7 @@ import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
+import samtaylor.podcasts.R
 
 
 class PlaybackService: Service(),
@@ -26,6 +31,8 @@ class PlaybackService: Service(),
     companion object
     {
         val EXTRA_EPISODE_ID = "episode_id"
+        val EXTRA_EPISODE_TITLE = "episode_title"
+        val EXTRA_SHOW_TITLE = "show_title"
 
         val BROADCAST_PLAYBACK_SERVICE_PLAY  = "samtaylor.podcasts.playback.play"
         val BROADCAST_PLAYBACK_SERVICE_PAUSE = "samtaylor.podcasts.playback.pause"
@@ -47,12 +54,16 @@ class PlaybackService: Service(),
     private var mediaPlayer: MediaPlayer? = null
 
     var episodeId: Int? = null
+    var episodeTitle: String? = null
+    var showTitle: String? = null
 
     private var resumePosition = 0
 
     private var audioManager: AudioManager? = null
 
     private var ongoingCall = false
+
+    private val binder: IBinder = LocalBinder()
 
     private val actionBroadcastReceiver = object: BroadcastReceiver() {
 
@@ -78,10 +89,11 @@ class PlaybackService: Service(),
         }
     }
 
-
     override fun onStartCommand( intent: Intent?, flags: Int, startId: Int ): Int
     {
         this.episodeId = intent?.extras?.get( EXTRA_EPISODE_ID ) as? Int
+        this.episodeTitle = intent?.extras?.get( EXTRA_EPISODE_TITLE ) as? String
+        this.showTitle = intent?.extras?.get( EXTRA_SHOW_TITLE ) as? String
 
         if ( this.episodeId != null )
         {
@@ -225,6 +237,8 @@ class PlaybackService: Service(),
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
                 intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
                 this.sendBroadcast( intent )
+
+                this.buildNotification()
             }
         }
     }
@@ -237,11 +251,13 @@ class PlaybackService: Service(),
                 it.stop()
                 this.resumePosition = 0
                 this.playbackState = PlaybackState.STOPPED
-
-                val intent = Intent( BROADCAST_PLAYBACK_SERVICE_STOP )
-                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
-                this.sendBroadcast( intent )
             }
+
+            val intent = Intent( BROADCAST_PLAYBACK_SERVICE_STOP )
+            intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+            this.sendBroadcast( intent )
+
+            this.removeNotification()
         }
     }
 
@@ -257,6 +273,8 @@ class PlaybackService: Service(),
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PAUSE )
                 intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
                 this.sendBroadcast( intent )
+
+                this.buildNotification()
             }
         }
     }
@@ -273,6 +291,8 @@ class PlaybackService: Service(),
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
                 intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
                 this.sendBroadcast( intent )
+
+                this.buildNotification()
             }
         }
     }
@@ -292,7 +312,62 @@ class PlaybackService: Service(),
 
     private fun buildNotification()
     {
+        val notificationBuilder = Notification.Builder( this )
+                .setShowWhen( false )
+                .setStyle( Notification.MediaStyle()
+                        .setMediaSession( null )
+                        .setShowActionsInCompactView() )
+                .setSmallIcon( android.R.drawable.stat_sys_headset )
+                .setContentText( this.showTitle )
+                .setContentTitle( this.episodeTitle )
 
+        if ( this.playbackState == PlaybackState.PLAYING )
+        {
+            notificationBuilder.addAction( Notification.Action.Builder( Icon.createWithResource( this, R.drawable.ic_pause_black_48px ),
+                                                                        "pause",
+                                                                        this.playbackAction( 0 ) ).build() )
+        }
+        else
+        {
+            notificationBuilder.addAction( Notification.Action.Builder( Icon.createWithResource( this, R.drawable.ic_play_arrow_black_48px ),
+                                                                        "play",
+                                                                        this.playbackAction( 1 ) ).build() )
+        }
+
+        notificationBuilder.addAction( Notification.Action.Builder( Icon.createWithResource( this, R.drawable.ic_stop_black_48px ),
+                                                                    "stop",
+                                                                    this.playbackAction( 2 ) ).build() )
+
+
+        val notificationManager = this.getSystemService( Context.NOTIFICATION_SERVICE ) as NotificationManager
+        notificationManager.notify( 161087, notificationBuilder.build() )
+    }
+
+    private fun removeNotification()
+    {
+        val notificationManager = this.getSystemService( Context.NOTIFICATION_SERVICE ) as NotificationManager
+        notificationManager.cancel( 161087 )
+    }
+
+    private fun playbackAction( action: Int ): PendingIntent?
+    {
+        val playbackAction = Intent()
+        when ( action )
+        {
+            0 -> {
+                playbackAction.action = ACTION_PAUSE
+            }
+
+            1 -> {
+                playbackAction.action = ACTION_RESUME
+            }
+
+            2 -> {
+                playbackAction.action = ACTION_STOP
+            }
+        }
+
+        return PendingIntent.getBroadcast( this, action, playbackAction, 0 )
     }
 
     override fun onAudioFocusChange( focusChange: Int )
@@ -372,7 +447,6 @@ class PlaybackService: Service(),
 
     override fun onBufferingUpdate(mp: MediaPlayer?, percent: Int) { }
 
-    private val binder: IBinder = LocalBinder()
 
     override fun onBind( intent: Intent? ): IBinder
     {

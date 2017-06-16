@@ -46,7 +46,7 @@ class PlaybackFragment: LifecycleFragment()
         episodeId?.let {
             this.view?.visibility = if ( isPlaying ) View.VISIBLE else View.GONE
 
-            val playButtonFragment = PlayButtonFragment.newInstance( it )
+            val playButtonFragment = PlayButtonFragment.newInstance( it, this.arguments[ ARG_EPISODE_TITLE ] as String, this.arguments[ ARG_SHOW_TITLE ] as String )
             this.fragmentManager.beginTransaction().replace( R.id.fragment_play_button_container, playButtonFragment ).commit()
 
             val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
@@ -79,16 +79,18 @@ class PlaybackFragment: LifecycleFragment()
 
     companion object
     {
-        val PLAYBACK_FRAGMENT_TAG = "playback_fragment"
-
         val ARG_EPISODE_ID = "episode_id"
+        val ARG_EPISODE_TITLE = "episode_title"
+        val ARG_SHOW_TITLE = "show_title"
 
-        fun newInstance( episodeId: Int ): PlaybackFragment
+        fun newInstance( episodeId: Int, episodeTitle: String?, showTitle: String? ): PlaybackFragment
         {
             val fragment = PlaybackFragment()
 
             val args = Bundle()
             args.putInt( ARG_EPISODE_ID, episodeId )
+            args.putString( ARG_EPISODE_TITLE, episodeTitle )
+            args.putString( ARG_SHOW_TITLE, showTitle )
             fragment.arguments = args
 
             return fragment

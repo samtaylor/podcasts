@@ -23,16 +23,13 @@ class EpisodeActivity : LifecycleActivity()
 
             val episodeName = findViewById( R.id.episode_name ) as TextView
             episodeName.text = it?.title
+
+            val playButtonFragment = PlayButtonFragment.newInstance( episodeId, it?.title, it?.show?.title )
+            this.supportFragmentManager.beginTransaction().add( R.id.play_button_container, playButtonFragment ).commit()
+
+            val playbackFragment = PlaybackFragment.newInstance( episodeId, it?.title, it?.show?.title )
+            this.supportFragmentManager.beginTransaction().add( R.id.playback_fragment_container, playbackFragment ).commit()
         } )
-
-        val playbackFragment = PlaybackFragment.newInstance( episodeId )
-
-        this.supportFragmentManager.beginTransaction().add( R.id.playback_fragment_container,
-                                                            playbackFragment,
-                                                            PlaybackFragment.PLAYBACK_FRAGMENT_TAG ).commit()
-
-        val playButtonFragment = PlayButtonFragment.newInstance( episodeId )
-        this.supportFragmentManager.beginTransaction().add( R.id.play_button_container, playButtonFragment ).commit()
     }
 
     companion object
