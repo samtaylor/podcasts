@@ -5,7 +5,6 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,12 +18,16 @@ class PlaybackFragment: LifecycleFragment()
 {
     private val serviceConnection = PlaybackServiceConnection { serviceConnection, state ->
 
-        this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING, serviceConnection.currentEpisode )
+        this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING ||
+                     serviceConnection.playbackState == PlaybackService.PlaybackState.PAUSED,
+                     serviceConnection.currentEpisode )
     }
 
     private var playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
 
-        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY, episodeId )
+        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ||
+                     action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE,
+                     episodeId )
     }
 
     override fun onCreate( savedInstanceState: Bundle? )

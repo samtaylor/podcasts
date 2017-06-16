@@ -2,7 +2,6 @@ package samtaylor.podcasts.playback.play
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -30,7 +29,7 @@ class PlayButtonFragment : Fragment()
         }
     }
 
-    private var playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
+    private val playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
 
         this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY,
                      action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_LOAD,
@@ -89,9 +88,22 @@ class PlayButtonFragment : Fragment()
         val button = rootView.findViewById( R.id.play_button ) as ImageButton
 
         button.setOnClickListener {
-            if ( this.serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING )
+            if ( episodeId == this.serviceConnection.currentEpisode )
             {
+                when ( this.serviceConnection.playbackState )
+                {
+                    PlaybackService.PlaybackState.PLAYING -> {
 
+                        this.context.sendBroadcast( Intent( PlaybackService.ACTION_PAUSE ) )
+                    }
+
+                    PlaybackService.PlaybackState.PAUSED -> {
+
+                        this.context.sendBroadcast( Intent( PlaybackService.ACTION_RESUME ) )
+                    }
+
+                    else -> {}
+                }
             }
             else
             {

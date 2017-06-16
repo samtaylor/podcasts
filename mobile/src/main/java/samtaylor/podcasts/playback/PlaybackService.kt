@@ -4,18 +4,14 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
-import android.content.IntentFilter
-import android.media.session.MediaSessionManager
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaControllerCompat
-import android.support.v4.media.session.MediaSessionCompat
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import android.util.Log
 
 
 class PlaybackService: Service(),
@@ -35,6 +31,10 @@ class PlaybackService: Service(),
         val BROADCAST_PLAYBACK_SERVICE_PAUSE = "samtaylor.podcasts.playback.pause"
         val BROADCAST_PLAYBACK_SERVICE_STOP  = "samtaylor.podcasts.playback.stop"
         val BROADCAST_PLAYBACK_SERVICE_LOAD  = "samtaylor.podcasts.playback.load"
+
+        val ACTION_PAUSE = "samtaylor.podcasts.playback.pause.action"
+        val ACTION_RESUME = "samtaylor.podcasts.playback.play.action"
+        val ACTION_STOP = "samtaylor.podcasts.playback.stop.action"
     }
 
     enum class PlaybackState
@@ -53,6 +53,31 @@ class PlaybackService: Service(),
     private var audioManager: AudioManager? = null
 
     private var ongoingCall = false
+
+    private val actionBroadcastReceiver = object: BroadcastReceiver() {
+
+        override fun onReceive( context: Context?, intent: Intent? )
+        {
+            when ( intent?.action )
+            {
+                ACTION_RESUME -> {
+
+                    this@PlaybackService.resumeMedia()
+                }
+
+                ACTION_PAUSE -> {
+
+                    this@PlaybackService.pauseMedia()
+                }
+
+                ACTION_STOP -> {
+
+                    this@PlaybackService.stopMedia()
+                }
+            }
+        }
+    }
+
 
     override fun onStartCommand( intent: Intent?, flags: Int, startId: Int ): Int
     {
@@ -130,6 +155,10 @@ class PlaybackService: Service(),
 
         val telephonyManager = this.getSystemService( Context.TELEPHONY_SERVICE ) as TelephonyManager
         telephonyManager.listen( this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE )
+
+        this.registerReceiver( this.actionBroadcastReceiver, IntentFilter( PlaybackService.ACTION_PAUSE ) )
+        this.registerReceiver( this.actionBroadcastReceiver, IntentFilter( PlaybackService.ACTION_RESUME ) )
+        this.registerReceiver( this.actionBroadcastReceiver, IntentFilter( PlaybackService.ACTION_STOP ) )
     }
 
     override fun onDestroy()
@@ -144,6 +173,7 @@ class PlaybackService: Service(),
         this.removeAudioFocus()
 
         this.unregisterReceiver( this.noisyBroadcastReceiver )
+        this.unregisterReceiver( this.actionBroadcastReceiver )
 
         val telephonyManager = this.getSystemService( Context.TELEPHONY_SERVICE ) as TelephonyManager
         telephonyManager.listen( this.phoneStateListener, PhoneStateListener.LISTEN_NONE )
