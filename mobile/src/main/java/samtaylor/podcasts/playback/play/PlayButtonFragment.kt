@@ -89,10 +89,17 @@ class PlayButtonFragment : Fragment()
         val button = rootView.findViewById( R.id.play_button ) as ImageButton
 
         button.setOnClickListener {
-            val playIntent = Intent( this.context, PlaybackService::class.java )
-            playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
-            this.context.startService( playIntent )
-            this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+            if ( this.serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING )
+            {
+
+            }
+            else
+            {
+                val playIntent = Intent( this.context, PlaybackService::class.java )
+                playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
+                this.context.startService( playIntent )
+                this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
+            }
         }
 
         return rootView

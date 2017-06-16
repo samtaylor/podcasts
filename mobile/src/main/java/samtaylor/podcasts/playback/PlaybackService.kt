@@ -1,6 +1,7 @@
 package samtaylor.podcasts.playback
 
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
@@ -8,6 +9,14 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import android.content.IntentFilter
+import android.media.session.MediaSessionManager
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
+
 
 class PlaybackService: Service(),
                        MediaPlayer.OnCompletionListener,
@@ -43,6 +52,8 @@ class PlaybackService: Service(),
 
     private var audioManager: AudioManager? = null
 
+    private var ongoingCall = false
+
     override fun onStartCommand( intent: Intent?, flags: Int, startId: Int ): Int
     {
         this.episodeId = intent?.extras?.get( EXTRA_EPISODE_ID ) as? Int
@@ -71,6 +82,56 @@ class PlaybackService: Service(),
         return super.onStartCommand( intent, flags, startId )
     }
 
+    private val noisyBroadcastReceiver = object: BroadcastReceiver()
+    {
+        override fun onReceive( context: Context?, intent: Intent? )
+        {
+            this@PlaybackService.pauseMedia()
+            this@PlaybackService.buildNotification()
+        }
+    }
+
+    private val phoneStateListener = object: PhoneStateListener()
+    {
+        override fun onCallStateChanged( state: Int, incomingNumber: String? )
+        {
+            when ( state )
+            {
+                TelephonyManager.CALL_STATE_OFFHOOK,
+                TelephonyManager.CALL_STATE_RINGING -> {
+
+                    if ( this@PlaybackService.mediaPlayer != null )
+                    {
+                        this@PlaybackService.pauseMedia()
+                        this@PlaybackService.ongoingCall = true
+                    }
+                }
+
+                TelephonyManager.CALL_STATE_IDLE -> {
+
+                    if (this@PlaybackService.mediaPlayer != null) {
+                        if ( this@PlaybackService.ongoingCall )
+                        {
+                            this@PlaybackService.ongoingCall = false
+                            this@PlaybackService.resumeMedia()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onCreate()
+    {
+        super.onCreate()
+
+        val intentFilter = IntentFilter( AudioManager.ACTION_AUDIO_BECOMING_NOISY )
+        registerReceiver( this.noisyBroadcastReceiver, intentFilter )
+
+        val telephonyManager = this.getSystemService( Context.TELEPHONY_SERVICE ) as TelephonyManager
+        telephonyManager.listen( this.phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE )
+    }
+
     override fun onDestroy()
     {
         super.onDestroy()
@@ -81,6 +142,11 @@ class PlaybackService: Service(),
         }
 
         this.removeAudioFocus()
+
+        this.unregisterReceiver( this.noisyBroadcastReceiver )
+
+        val telephonyManager = this.getSystemService( Context.TELEPHONY_SERVICE ) as TelephonyManager
+        telephonyManager.listen( this.phoneStateListener, PhoneStateListener.LISTEN_NONE )
     }
 
     private fun initMediaPlayer()
@@ -194,6 +260,11 @@ class PlaybackService: Service(),
         return AudioManager.AUDIOFOCUS_REQUEST_GRANTED == this.audioManager?.abandonAudioFocus( this )
     }
 
+    private fun buildNotification()
+    {
+
+    }
+
     override fun onAudioFocusChange( focusChange: Int )
     {
         when( focusChange )
@@ -265,17 +336,11 @@ class PlaybackService: Service(),
         return false
     }
 
-    override fun onSeekComplete(mp: MediaPlayer?) {
+    override fun onSeekComplete(mp: MediaPlayer?) { }
 
-    }
+    override fun onInfo(mp: MediaPlayer?, what: Int, extra: Int): Boolean { return true }
 
-    override fun onInfo(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
-        return true
-    }
-
-    override fun onBufferingUpdate(mp: MediaPlayer?, percent: Int) {
-
-    }
+    override fun onBufferingUpdate(mp: MediaPlayer?, percent: Int) { }
 
     private val binder: IBinder = LocalBinder()
 
@@ -289,6 +354,15 @@ class PlaybackService: Service(),
         fun getService(): PlaybackService
         {
             return this@PlaybackService
+        }
+    }
+
+    inner class BecomingNoisyBroadcastReceiver: BroadcastReceiver()
+    {
+        override fun onReceive( context: Context?, intent: Intent? )
+        {
+            this@PlaybackService.pauseMedia()
+            this@PlaybackService.buildNotification()
         }
     }
 }
