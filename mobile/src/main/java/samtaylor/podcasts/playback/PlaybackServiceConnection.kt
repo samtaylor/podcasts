@@ -3,6 +3,7 @@ package samtaylor.podcasts.playback
 import android.content.ComponentName
 import android.content.ServiceConnection
 import android.os.IBinder
+import samtaylor.podcasts.dataModel.Episode
 
 class PlaybackServiceConnection( private val callback: ( PlaybackServiceConnection, ConnectionState ) -> Unit ) : ServiceConnection
 {
@@ -14,8 +15,8 @@ class PlaybackServiceConnection( private val callback: ( PlaybackServiceConnecti
 
     private var serviceBound = false
 
-    var currentEpisode: Int? = null
-        get() = this.playbackService?.episodeId
+    var currentEpisode: Episode? = null
+        get() = this.playbackService?.currentEpisode
 
     var playbackState: PlaybackService.PlaybackState = PlaybackService.PlaybackState.STOPPED
         get() = this.playbackService?.playbackState ?: PlaybackService.PlaybackState.STOPPED

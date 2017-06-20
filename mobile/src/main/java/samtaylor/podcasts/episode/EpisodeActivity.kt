@@ -6,7 +6,6 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.widget.TextView
 import samtaylor.podcasts.R
-import samtaylor.podcasts.playback.PlaybackFragment
 import samtaylor.podcasts.playback.play.PlayButtonFragment
 
 class EpisodeActivity : LifecycleActivity()
@@ -24,11 +23,8 @@ class EpisodeActivity : LifecycleActivity()
             val episodeName = findViewById( R.id.episode_name ) as TextView
             episodeName.text = it?.title
 
-            val playButtonFragment = PlayButtonFragment.newInstance( episodeId, it?.title, it?.show?.title )
-            this.supportFragmentManager.beginTransaction().add( R.id.play_button_container, playButtonFragment ).commit()
-
-            val playbackFragment = PlaybackFragment.newInstance( episodeId, it?.title, it?.show?.title )
-            this.supportFragmentManager.beginTransaction().add( R.id.playback_fragment_container, playbackFragment ).commit()
+            val playButtonFragment = PlayButtonFragment.newInstance(episodeId )
+            this.supportFragmentManager.beginTransaction().replace( R.id.play_button_container, playButtonFragment ).commit()
         } )
     }
 

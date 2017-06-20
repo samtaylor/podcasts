@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import samtaylor.podcasts.R
+import samtaylor.podcasts.dataModel.Episode
 import samtaylor.podcasts.playback.PlaybackService
 import samtaylor.podcasts.playback.PlaybackServiceBroadcastReceiver
 import samtaylor.podcasts.playback.PlaybackServiceConnection
@@ -31,18 +32,21 @@ class PlayButtonFragment : Fragment()
 
     private val playbackServiceBroadcastReceiver = PlaybackServiceBroadcastReceiver { action, episodeId ->
 
-        this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY,
-                     action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_LOAD,
-                     episodeId )
+        if ( this.serviceConnection.currentEpisode?.episode_id == episodeId || action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_LOAD )
+        {
+            this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY,
+                         action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_LOAD,
+                         this.serviceConnection.currentEpisode )
+        }
     }
 
-    private fun update( isPlaying: Boolean, isLoading: Boolean, episodeId: Int? )
+    private fun update( isPlaying: Boolean, isLoading: Boolean, episode: Episode? )
     {
         val button = this.view?.findViewById( R.id.play_button ) as ImageButton
         val spinner = this.view?.findViewById( R.id.loading ) as ProgressBar
 
         button.setImageResource( R.drawable.ic_play_arrow_black_48px )
-        if ( episodeId == this.arguments[ ARG_EPISODE_ID ] )
+        if ( episode?.episode_id == this.arguments[ ARG_EPISODE_ID ] )
         {
             if ( isPlaying ) { button.setImageResource( R.drawable.ic_pause_black_48px ) }
         }
@@ -88,7 +92,7 @@ class PlayButtonFragment : Fragment()
         val button = rootView.findViewById( R.id.play_button ) as ImageButton
 
         button.setOnClickListener {
-            if ( episodeId == this.serviceConnection.currentEpisode )
+            if ( episodeId == this.serviceConnection.currentEpisode?.episode_id )
             {
                 when ( this.serviceConnection.playbackState )
                 {
@@ -104,26 +108,24 @@ class PlayButtonFragment : Fragment()
 
                     else -> {
 
-                        this.playEpisode( episodeId, this.arguments[ ARG_EPISODE_TITLE ] as String, this.arguments[ ARG_SHOW_TITLE ] as String )
+                        this.playEpisode( episodeId )
                     }
                 }
             }
             else
             {
-                this.playEpisode( episodeId, this.arguments[ ARG_EPISODE_TITLE ] as String, this.arguments[ ARG_SHOW_TITLE ] as String )
+                this.playEpisode( episodeId )
             }
         }
 
         return rootView
     }
 
-    private fun playEpisode( episodeId: Int, episodeTitle: String = "episodeTitle", showTitle: String = "showTitle" )
+    private fun playEpisode( episodeId: Int )
     {
 
         val playIntent = Intent( this.context, PlaybackService::class.java )
         playIntent.putExtra( PlaybackService.EXTRA_EPISODE_ID, episodeId )
-        playIntent.putExtra( PlaybackService.EXTRA_EPISODE_TITLE, episodeTitle )
-        playIntent.putExtra( PlaybackService.EXTRA_SHOW_TITLE, showTitle )
         this.context.startService( playIntent )
         this.context.bindService( playIntent, this.serviceConnection, Context.BIND_AUTO_CREATE )
     }
@@ -131,17 +133,13 @@ class PlayButtonFragment : Fragment()
     companion object
     {
         val ARG_EPISODE_ID = "episode_id"
-        val ARG_EPISODE_TITLE = "episode_title"
-        val ARG_SHOW_TITLE = "show_title"
 
-        fun newInstance( episodeId: Int, episodeTitle: String?, showTitle: String? ): PlayButtonFragment
+        fun newInstance(episodeId: Int ): PlayButtonFragment
         {
             val fragment = PlayButtonFragment()
 
             val args = Bundle()
             args.putInt( ARG_EPISODE_ID, episodeId )
-            args.putString( ARG_EPISODE_TITLE, episodeTitle )
-            args.putString( ARG_SHOW_TITLE, showTitle )
             fragment.arguments = args
 
             return fragment

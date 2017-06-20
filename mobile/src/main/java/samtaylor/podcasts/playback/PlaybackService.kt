@@ -16,7 +16,13 @@ import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
+import com.github.kittinunf.fuel.android.extension.responseJson
+import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.result.Result
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
 import samtaylor.podcasts.R
+import samtaylor.podcasts.dataModel.Episode
 
 
 class PlaybackService: Service(),
@@ -31,8 +37,6 @@ class PlaybackService: Service(),
     companion object
     {
         val EXTRA_EPISODE_ID = "episode_id"
-        val EXTRA_EPISODE_TITLE = "episode_title"
-        val EXTRA_SHOW_TITLE = "show_title"
 
         val BROADCAST_PLAYBACK_SERVICE_PLAY  = "samtaylor.podcasts.playback.play"
         val BROADCAST_PLAYBACK_SERVICE_PAUSE = "samtaylor.podcasts.playback.pause"
@@ -53,9 +57,7 @@ class PlaybackService: Service(),
 
     private var mediaPlayer: MediaPlayer? = null
 
-    var episodeId: Int? = null
-    var episodeTitle: String? = null
-    var showTitle: String? = null
+    var currentEpisode: Episode? = null
 
     private var resumePosition = 0
 
@@ -91,11 +93,9 @@ class PlaybackService: Service(),
 
     override fun onStartCommand( intent: Intent?, flags: Int, startId: Int ): Int
     {
-        this.episodeId = intent?.extras?.get( EXTRA_EPISODE_ID ) as? Int
-        this.episodeTitle = intent?.extras?.get( EXTRA_EPISODE_TITLE ) as? String
-        this.showTitle = intent?.extras?.get( EXTRA_SHOW_TITLE ) as? String
+        val episodeId = intent?.extras?.get( EXTRA_EPISODE_ID ) as? Int
 
-        if ( this.episodeId != null )
+        if ( episodeId != null )
         {
             if ( !this.requestAudioFocus() )
             {
@@ -108,7 +108,21 @@ class PlaybackService: Service(),
                     this.stopMedia()
                 }
 
-                this.initMediaPlayer()
+                this.initMediaPlayer( episodeId )
+
+                "https://api.spreaker.com/v2/episodes/$episodeId".httpGet().responseJson { _, _, result ->
+
+                    when( result )
+                    {
+                        is Result.Success -> {
+                            val json = result.value.obj()
+
+
+                            this.currentEpisode = Gson().fromJson<Episode>( json.getJSONObject( "response" ).getJSONObject( "episode" ).toString() )
+                        }
+                    }
+                }
+
             }
         }
         else
@@ -191,7 +205,7 @@ class PlaybackService: Service(),
         telephonyManager.listen( this.phoneStateListener, PhoneStateListener.LISTEN_NONE )
     }
 
-    private fun initMediaPlayer()
+    private fun initMediaPlayer( episodeId: Int )
     {
         this.mediaPlayer = MediaPlayer()
 
@@ -207,14 +221,14 @@ class PlaybackService: Service(),
 
             it.setAudioStreamType( AudioManager.STREAM_MUSIC )
 
-            it.setDataSource( "https://api.spreaker.com/v2/episodes/${this.episodeId}/play" )
+            it.setDataSource( "https://api.spreaker.com/v2/episodes/$episodeId/play" )
 
             it.prepareAsync()
 
             this.playbackState = PlaybackState.LOADING
 
             val intent = Intent( BROADCAST_PLAYBACK_SERVICE_LOAD )
-            intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+            intent.putExtra( EXTRA_EPISODE_ID, episodeId )
             this.sendBroadcast( intent )
         }
     }
@@ -235,7 +249,7 @@ class PlaybackService: Service(),
                 }
 
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
-                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                intent.putExtra( EXTRA_EPISODE_ID, this.currentEpisode?.episode_id )
                 this.sendBroadcast( intent )
 
                 this.buildNotification()
@@ -254,7 +268,7 @@ class PlaybackService: Service(),
             }
 
             val intent = Intent( BROADCAST_PLAYBACK_SERVICE_STOP )
-            intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+            intent.putExtra( EXTRA_EPISODE_ID, this.currentEpisode?.episode_id )
             this.sendBroadcast( intent )
 
             this.removeNotification()
@@ -271,7 +285,7 @@ class PlaybackService: Service(),
                 this.playbackState = PlaybackState.PAUSED
 
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PAUSE )
-                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                intent.putExtra( EXTRA_EPISODE_ID, this.currentEpisode?.episode_id )
                 this.sendBroadcast( intent )
 
                 this.buildNotification()
@@ -289,7 +303,7 @@ class PlaybackService: Service(),
                 this.playbackState = PlaybackState.PLAYING
 
                 val intent = Intent( BROADCAST_PLAYBACK_SERVICE_PLAY )
-                intent.putExtra( EXTRA_EPISODE_ID, this.episodeId )
+                intent.putExtra( EXTRA_EPISODE_ID, this.currentEpisode?.episode_id )
                 this.sendBroadcast( intent )
 
                 this.buildNotification()
@@ -318,8 +332,8 @@ class PlaybackService: Service(),
                         .setMediaSession( null )
                         .setShowActionsInCompactView() )
                 .setSmallIcon( android.R.drawable.stat_sys_headset )
-                .setContentText( this.showTitle )
-                .setContentTitle( this.episodeTitle )
+                .setContentText( this.currentEpisode?.show?.title )
+                .setContentTitle( this.currentEpisode?.title )
 
         if ( this.playbackState == PlaybackState.PLAYING )
         {
@@ -377,7 +391,10 @@ class PlaybackService: Service(),
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if ( this.mediaPlayer == null )
                 {
-                    this.initMediaPlayer()
+                    this.currentEpisode?.let {
+
+                        this.initMediaPlayer( it.episode_id )
+                    }
                 }
 
                 this.mediaPlayer?.let {
