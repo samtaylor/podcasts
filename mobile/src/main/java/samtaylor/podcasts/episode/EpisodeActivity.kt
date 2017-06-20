@@ -18,13 +18,17 @@ class EpisodeActivity : LifecycleActivity()
         val episodeId = this.intent.extras[ EXTRA_EPISODE_ID ] as Int
         val viewModel = ViewModelProviders.of( this )[ EpisodeViewModel::class.java ]
 
-        viewModel.getEpisode( episodeId ).observe( this, Observer {
+        viewModel.getEpisode( episodeId ).observe( this, Observer { episode ->
 
             val episodeName = findViewById( R.id.episode_name ) as TextView
-            episodeName.text = it?.title
+            episode?.let {
+                this.title = it.title
 
-            val playButtonFragment = PlayButtonFragment.newInstance(episodeId )
-            this.supportFragmentManager.beginTransaction().replace( R.id.play_button_container, playButtonFragment ).commit()
+                episodeName.text = it.title
+
+                val playButtonFragment = PlayButtonFragment.newInstance( episodeId )
+                this.supportFragmentManager.beginTransaction().replace( R.id.play_button_container, playButtonFragment ).commit()
+            }
         } )
     }
 
