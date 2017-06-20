@@ -29,6 +29,8 @@ class ShowActivity : LifecycleActivity()
             val description = findViewById( R.id.show_description ) as TextView
 
             show?.let {
+                this.title = show.title
+
                 title.text = show.title
                 author.text = show.author.fullname
                 description.text = show.description

@@ -1,18 +1,25 @@
 package samtaylor.podcasts.channelList
 
+import android.app.SearchManager
 import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ComponentName
+import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
+import android.view.Menu
+import android.widget.SearchView
 import android.widget.Toolbar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.channel.ChannelFragment
 import samtaylor.podcasts.dataModel.Channel
+import samtaylor.podcasts.search.SearchActivity
+
 
 class MainActivity : LifecycleActivity()
 {
@@ -42,6 +49,17 @@ class MainActivity : LifecycleActivity()
 
         channelsViewPager.addOnPageChangeListener( TabLayout.TabLayoutOnPageChangeListener( tabLayout ) )
         tabLayout.addOnTabSelectedListener( TabLayout.ViewPagerOnTabSelectedListener( channelsViewPager ) )
+    }
+
+    override fun onCreateOptionsMenu( menu: Menu? ): Boolean
+    {
+        this.menuInflater.inflate( R.menu.menu_main, menu )
+
+        val searchManager = getSystemService( Context.SEARCH_SERVICE ) as SearchManager
+        val searchView = menu?.findItem( R.id.search )?.actionView as SearchView
+        searchView.setSearchableInfo( searchManager.getSearchableInfo( ComponentName( this, SearchActivity::class.java ) ) )
+
+        return true
     }
 
     inner class ChannelsAdapter( fm: FragmentManager, val channels: List<Channel> ) : FragmentPagerAdapter( fm )
