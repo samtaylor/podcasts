@@ -18,7 +18,7 @@ import android.widget.Toolbar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.channel.ChannelFragment
 import samtaylor.podcasts.dataModel.Channel
-import samtaylor.podcasts.search.SearchActivity
+import samtaylor.podcasts.channel.search.SearchActivity
 
 
 class MainActivity : LifecycleActivity()
