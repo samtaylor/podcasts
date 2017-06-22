@@ -4,6 +4,7 @@ import android.arch.lifecycle.LifecycleFragment
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -32,9 +33,9 @@ class ChannelFragment : LifecycleFragment()
             val recyclerView = rootView.findViewById( R.id.channel_list ) as RecyclerView
             recyclerView.setHasFixedSize( true )
 
-            recyclerView.layoutManager = LinearLayoutManager( this.context )
+            recyclerView.layoutManager = GridLayoutManager( this.context, 2 )
 
-            recyclerView.adapter = ShowsAdapter(shows)
+            recyclerView.adapter = ShowsAdapter( shows )
 
         } )
 
