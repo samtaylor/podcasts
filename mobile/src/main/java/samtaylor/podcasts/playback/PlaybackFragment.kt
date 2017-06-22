@@ -14,10 +14,13 @@ import samtaylor.podcasts.playback.play.PlayButtonFragment
 
 class PlaybackFragment: LifecycleFragment()
 {
+    var paddingAdjustment: ((Int) -> Unit)? = null
+
     private val serviceConnection = PlaybackServiceConnection { serviceConnection, _ ->
 
         this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING ||
                      serviceConnection.playbackState == PlaybackService.PlaybackState.PAUSED,
+                     serviceConnection.playbackState == PlaybackService.PlaybackState.STOPPED,
                      serviceConnection.currentEpisode )
     }
 
@@ -25,6 +28,7 @@ class PlaybackFragment: LifecycleFragment()
 
         this.update( action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PLAY ||
                      action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_PAUSE,
+                     action == PlaybackService.BROADCAST_PLAYBACK_SERVICE_STOP,
                      this.serviceConnection.currentEpisode )
     }
 
@@ -43,6 +47,7 @@ class PlaybackFragment: LifecycleFragment()
 
         this.update( serviceConnection.playbackState == PlaybackService.PlaybackState.PLAYING ||
                      serviceConnection.playbackState == PlaybackService.PlaybackState.PAUSED,
+                     serviceConnection.playbackState == PlaybackService.PlaybackState.STOPPED,
                      serviceConnection.currentEpisode )
 
         this.playbackServiceBroadcastReceiver.register( this.context )
@@ -55,9 +60,12 @@ class PlaybackFragment: LifecycleFragment()
         this.playbackServiceBroadcastReceiver.unregister( this.context )
     }
 
-    private fun update( isPlaying: Boolean, episode: Episode? )
+    private fun update( isPlaying: Boolean, isStopped: Boolean, episode: Episode? )
     {
         this.view?.visibility = View.GONE
+        this.paddingAdjustment?.let {
+            it( 0 )
+        }
 
         episode?.let {
             this.view?.visibility = if ( isPlaying ) View.VISIBLE else View.GONE
@@ -70,6 +78,14 @@ class PlaybackFragment: LifecycleFragment()
 
             showName.text = it.show.title
             episodeName.text = it.title
+
+            if ( !isStopped )
+            {
+                this.paddingAdjustment?.let {
+
+                    it( this.resources.getDimension( R.dimen.mini_player_height ).toInt() )
+                }
+            }
         }
     }
 

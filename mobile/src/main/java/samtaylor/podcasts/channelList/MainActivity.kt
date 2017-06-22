@@ -19,6 +19,7 @@ import samtaylor.podcasts.R
 import samtaylor.podcasts.channel.ChannelFragment
 import samtaylor.podcasts.dataModel.Channel
 import samtaylor.podcasts.channel.search.SearchActivity
+import samtaylor.podcasts.playback.PlaybackFragment
 
 
 class MainActivity : LifecycleActivity()
@@ -43,12 +44,18 @@ class MainActivity : LifecycleActivity()
             {
                 val tab = tabLayout.newTab()
                 tab.text = channel.name
-                tabLayout.addTab(tab)
+                tabLayout.addTab( tab )
             }
         } )
 
         channelsViewPager.addOnPageChangeListener( TabLayout.TabLayoutOnPageChangeListener( tabLayout ) )
         tabLayout.addOnTabSelectedListener( TabLayout.ViewPagerOnTabSelectedListener( channelsViewPager ) )
+
+        val playbackFragment = this.supportFragmentManager.findFragmentById( R.id.playback_fragment ) as PlaybackFragment
+        playbackFragment.paddingAdjustment = {
+            val view = this.findViewById( R.id.channels )
+            view.setPadding( 0, 0, 0, it )
+        }
     }
 
     override fun onCreateOptionsMenu( menu: Menu? ): Boolean
