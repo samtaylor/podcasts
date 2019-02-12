@@ -1,15 +1,15 @@
 package samtaylor.podcasts.shows
 
-import android.arch.lifecycle.LifecycleActivity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.widget.TextView
 import android.widget.Toolbar
 import samtaylor.podcasts.R
 import samtaylor.podcasts.episodeList.EpisodeListFragment
 
-class ShowActivity : LifecycleActivity()
+class ShowActivity : AppCompatActivity()
 {
     override fun onCreate( savedInstanceState: Bundle? )
     {

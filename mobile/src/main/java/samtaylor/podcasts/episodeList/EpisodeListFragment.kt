@@ -1,10 +1,10 @@
 package samtaylor.podcasts.episodeList
 
-import android.arch.lifecycle.LifecycleFragment
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -15,7 +15,7 @@ import samtaylor.podcasts.R
 import samtaylor.podcasts.dataModel.Episode
 import samtaylor.podcasts.episode.EpisodeActivity
 
-class EpisodeListFragment: LifecycleFragment()
+class EpisodeListFragment: Fragment()
 {
     override fun onCreateView(inflater: LayoutInflater?,
                               container: ViewGroup?,
